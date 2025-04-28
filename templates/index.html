@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}MedBooking - Medical Appointment System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Your Health, Our Priority</h1>
+        <p class="lead">Book medical appointments online and manage your health records with ease.</p>
+        {% if not current_user.is_authenticated %}
+            <div class="mt-4">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">Register Now</a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">Login</a>
+            </div>
+        {% else %}
+            <div class="mt-4">
+                {% if current_user.is_patient() %}
+                    <a href="{{ url_for('appointment.book') }}" class="btn btn-primary btn-lg">Book Appointment</a>
+                {% elif current_user.is_doctor() %}
+                    <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-primary btn-lg">View Dashboard</a>
+                {% elif current_user.is_admin() %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-lg">Admin Dashboard</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Our Features</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-check feature-icon"></i>
+                        <h3 class="card-title h4">Easy Appointment Booking</h3>
+                        <p class="card-text">Schedule, reschedule, or cancel appointments with your preferred doctor at your convenience.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-comments feature-icon"></i>
+                        <h3 class="card-title h4">Doctor Communication</h3>
+                        <p class="card-text">Chat with your doctor directly through our secure messaging system for follow-ups and inquiries.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-file-medical feature-icon"></i>
+                        <h3 class="card-title h4">Health Records Management</h3>
+                        <p class="card-text">Store and access your medical records securely in one place for better healthcare continuity.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row">
+            <div class="col-md-3 mb-4 text-center">
+                <div class="bg-white p-4 rounded shadow-sm h-100">
+                    <div class="display-4 text-primary mb-3">1</div>
+                    <h3 class="h5">Create Account</h3>
+                    <p class="mb-0">Register as a patient or doctor to access our services.</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4 text-center">
+                <div class="bg-white p-4 rounded shadow-sm h-100">
+                    <div class="display-4 text-primary mb-3">2</div>
+                    <h3 class="h5">Find a Doctor</h3>
+                    <p class="mb-0">Browse doctors by specialization and choose the right one for you.</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4 text-center">
+                <div class="bg-white p-4 rounded shadow-sm h-100">
+                    <div class="display-4 text-primary mb-3">3</div>
+                    <h3 class="h5">Book Appointment</h3>
+                    <p class="mb-0">Select a convenient date and time for your appointment.</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4 text-center">
+                <div class="bg-white p-4 rounded shadow-sm h-100">
+                    <div class="display-4 text-primary mb-3">4</div>
+                    <h3 class="h5">Get Care</h3>
+                    <p class="mb-0">Receive medical care and manage your health records easily.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Users Say</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="mb-3 text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="card-text">"MedBooking has made it so easy to schedule appointments with my doctor. I no longer have to wait on hold or visit in person to book a consultation."</p>
+                        <div class="d-flex align-items-center">
+                            <div class="ms-3">
+                                <h6 class="mb-0">John D.</h6>
+                                <small class="text-muted">Patient</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="mb-3 text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="card-text">"As a doctor, this system has streamlined my practice. The appointment management and patient communication features save me hours every week."</p>
+                        <div class="d-flex align-items-center">
+                            <div class="ms-3">
+                                <h6 class="mb-0">Dr. Sarah M.</h6>
+                                <small class="text-muted">Cardiologist</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="mb-3 text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="card-text">"I love having all my health records in one place. The chat feature also makes it easy to ask follow-up questions without making another appointment."</p>
+                        <div class="d-flex align-items-center">
+                            <div class="ms-3">
+                                <h6 class="mb-0">Maria R.</h6>
+                                <small class="text-muted">Patient</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white text-center">
+    <div class="container">
+        <h2>Ready to Take Control of Your Health?</h2>
+        <p class="lead">Join thousands of patients and doctors who trust MedBooking for their healthcare needs.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg mt-3">Get Started Now</a>
+        {% else %}
+            {% if current_user.is_patient() %}
+                <a href="{{ url_for('appointment.book') }}" class="btn btn-light btn-lg mt-3">Book Your Appointment</a>
+            {% endif %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

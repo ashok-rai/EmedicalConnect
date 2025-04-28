@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - MedBooking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+    
+    <!-- Dashboard Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <h3 class="display-4">{{ patient_count }}</h3>
+                    <p class="lead mb-0">Patients</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 text-center">
+                    <a href="{{ url_for('admin.patients') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <h3 class="display-4">{{ doctor_count }}</h3>
+                    <p class="lead mb-0">Doctors</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 text-center">
+                    <a href="{{ url_for('admin.doctors') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <h3 class="display-4">{{ scheduled_count + completed_count + cancelled_count }}</h3>
+                    <p class="lead mb-0">Total Appointments</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 text-center">
+                    <a href="{{ url_for('admin.appointments') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointment Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Appointment Statistics</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <h5 class="text-primary">Scheduled</h5>
+                                <h3 class="display-5">{{ scheduled_count }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <h5 class="text-success">Completed</h5>
+                                <h3 class="display-5">{{ completed_count }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="border rounded p-3">
+                                <h5 class="text-danger">Cancelled</h5>
+                                <h3 class="display-5">{{ cancelled_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Admin Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.doctors') }}" class="btn btn-outline-primary d-block py-3">
+                                <i class="fas fa-user-md mb-2" style="font-size: 2rem;"></i><br>
+                                Manage Doctors
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.patients') }}" class="btn btn-outline-success d-block py-3">
+                                <i class="fas fa-users mb-2" style="font-size: 2rem;"></i><br>
+                                Manage Patients
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.appointments') }}" class="btn btn-outline-info d-block py-3">
+                                <i class="fas fa-calendar-check mb-2" style="font-size: 2rem;"></i><br>
+                                View Appointments
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.feedback') }}" class="btn btn-outline-warning d-block py-3">
+                                <i class="fas fa-comment-dots mb-2" style="font-size: 2rem;"></i><br>
+                                View Feedback
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Appointments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Recent Appointments</h4>
+                    <a href="{{ url_for('admin.appointments') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Patient</th>
+                                        <th>Doctor</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in recent_appointments %}
+                                        <tr>
+                                            <td>{{ appointment.date.strftime('%d %b, %Y') }}</td>
+                                            <td>{{ appointment.time.strftime('%I:%M %p') }}</td>
+                                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
+                                            <td>Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</td>
+                                            <td>
+                                                {% if appointment.status == 'scheduled' %}
+                                                    <span class="badge bg-primary">{{ appointment.status }}</span>
+                                                {% elif appointment.status == 'completed' %}
+                                                    <span class="badge bg-success">{{ appointment.status }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ appointment.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ appointment.created_at.strftime('%d %b, %Y') }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center py-4">No appointments recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

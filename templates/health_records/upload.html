@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Health Record - MedBooking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Upload Health Record</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Health Record Details</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('health_record.upload') }}" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        {% if current_user.is_doctor() and patients %}
+                            <div class="mb-3">
+                                <label for="patient_id" class="form-label">Patient</label>
+                                <select name="patient_id" id="patient_id" class="form-select" required>
+                                    <option value="">-- Select Patient --</option>
+                                    {% for patient in patients %}
+                                        <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Enter record title") }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.record_type.label(class="form-label") }}
+                            {{ form.record_type(class="form-select" + (" is-invalid" if form.record_type.errors else "")) }}
+                            {% if form.record_type.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.record_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4, placeholder="Enter record description") }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.file.label(class="form-label") }}
+                            {{ form.file(class="form-control" + (" is-invalid" if form.file.errors else "")) }}
+                            {% if form.file.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Upload PDF, JPG, PNG, DOC, or DOCX files only (max 16MB).</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Record Type Guide</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-flask text-primary me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Lab Report</strong>
+                                <p class="mb-0 small">Blood tests, urine tests, imaging results</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-prescription text-success me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Prescription</strong>
+                                <p class="mb-0 small">Medication details, dosage, and instructions</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-x-ray text-warning me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Medical Image</strong>
+                                <p class="mb-0 small">X-rays, MRIs, CT scans, ultrasounds</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-clipboard-list text-info me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Doctor Note</strong>
+                                <p class="mb-0 small">Diagnosis, treatment plan, follow-up instructions</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-file-medical text-secondary me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <strong>Other</strong>
+                                <p class="mb-0 small">Any other medical documentation</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Data Security Notice</h5>
+                </div>
+                <div class="card-body">
+                    <p><i class="fas fa-shield-alt me-2"></i> Your medical records are securely stored and encrypted.</p>
+                    <p><i class="fas fa-user-lock me-2"></i> Only you and your authorized healthcare providers can access your records.</p>
+                    <p><i class="fas fa-file-medical-alt me-2"></i> Keeping your records updated helps your doctor provide better care.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

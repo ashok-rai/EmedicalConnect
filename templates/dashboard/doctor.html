@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctor Dashboard - MedBooking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Welcome, Dr. {{ current_user.doctor.last_name }}!</h1>
+    
+    <!-- Today's Schedule -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Today's Appointments</h4>
+                </div>
+                <div class="card-body">
+                    {% if today_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in today_appointments %}
+                                        <tr>
+                                            <td>{{ appointment.time.strftime('%I:%M %p') }}</td>
+                                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
+                                            <td class="text-truncate" style="max-width: 250px;">{{ appointment.reason }}</td>
+                                            <td><span class="badge bg-primary">{{ appointment.status }}</span></td>
+                                            <td>
+                                                <a href="{{ url_for('appointment.view', appointment_id=appointment.id) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('doctor.patient_records', patient_id=appointment.patient.id) }}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-file-medical"></i>
+                                                </a>
+                                                <a href="{{ url_for('chat.room', user_id=appointment.patient.user_id) }}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-comment"></i>
+                                                </a>
+                                                <form action="{{ url_for('appointment.complete', appointment_id=appointment.id) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-primary complete-appointment">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center py-4">No appointments scheduled for today.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <i class="fas fa-calendar-check text-primary mb-3" style="font-size: 2.5rem;"></i>
+                    <div class="stat-number">{{ today_appointments|length }}</div>
+                    <div class="stat-label">Today's Appointments</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <i class="fas fa-calendar-alt text-success mb-3" style="font-size: 2.5rem;"></i>
+                    <div class="stat-number">{{ upcoming_appointments|length }}</div>
+                    <div class="stat-label">Upcoming Appointments</div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 text-center">
+                    <a href="{{ url_for('appointment.manage') }}" class="btn btn-sm btn-outline-success">View All</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <i class="fas fa-envelope text-info mb-3" style="font-size: 2.5rem;"></i>
+                    <div class="stat-number">{{ unread_messages }}</div>
+                    <div class="stat-label">Unread Messages</div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 text-center">
+                    <a href="{{ url_for('chat.index') }}" class="btn btn-sm btn-outline-info">View Messages</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('appointment.manage') }}" class="btn btn-outline-primary d-block py-3">
+                                <i class="fas fa-calendar mb-2" style="font-size: 2rem;"></i><br>
+                                Manage Appointments
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('doctor.patients') }}" class="btn btn-outline-success d-block py-3">
+                                <i class="fas fa-users mb-2" style="font-size: 2rem;"></i><br>
+                                View Patients
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('chat.index') }}" class="btn btn-outline-info d-block py-3">
+                                <i class="fas fa-comment-medical mb-2" style="font-size: 2rem;"></i><br>
+                                Patient Messages
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('health_record.upload') }}" class="btn btn-outline-warning d-block py-3">
+                                <i class="fas fa-file-upload mb-2" style="font-size: 2rem;"></i><br>
+                                Upload Records
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upcoming Appointments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Upcoming Appointments</h4>
+                    <a href="{{ url_for('appointment.manage') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in upcoming_appointments %}
+                                        <tr>
+                                            <td>{{ appointment.date.strftime('%d %b, %Y') }}</td>
+                                            <td>{{ appointment.time.strftime('%I:%M %p') }}</td>
+                                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
+                                            <td class="text-truncate" style="max-width: 250px;">{{ appointment.reason }}</td>
+                                            <td>
+                                                <a href="{{ url_for('appointment.view', appointment_id=appointment.id) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('chat.room', user_id=appointment.patient.user_id) }}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-comment"></i>
+                                                </a>
+                                                <form action="{{ url_for('appointment.cancel', appointment_id=appointment.id) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-danger cancel-appointment">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center py-4">No upcoming appointments scheduled.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
