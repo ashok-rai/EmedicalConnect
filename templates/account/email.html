@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% load widget_tweaks %}
+
+{% block title %}{% trans "Email Addresses" %} - MedBooking{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+              <h1 class="h3 mb-3 fw-normal text-primary">{% trans "Email Addresses" %}</h1>
+              <p class="text-muted">{% trans "Manage your email addresses associated with your account." %}</p>
+            </div>
+
+            {% if user.emailaddress_set.all %}
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="card-title mb-0 fs-6">{% trans "The following email addresses are associated with your account:" %}</h5>
+              </div>
+              <div class="card-body">
+                <form action="{% url 'account_email' %}" method="post">
+                  {% csrf_token %}
+                  
+                  <div class="form-check-list">
+                    {% for emailaddress in user.emailaddress_set.all %}
+                    <div class="form-check d-flex align-items-center py-2 border-bottom">
+                      <input id="email_radio_{{ forloop.counter }}" type="radio" name="email" 
+                             class="form-check-input me-2" {% if emailaddress.primary or user.emailaddress_set.count == 1 %}checked="checked"{% endif %} 
+                             value="{{ emailaddress.email }}">
+                      <label class="form-check-label w-100" for="email_radio_{{ forloop.counter }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span>{{ emailaddress.email }}</span>
+                          <span>
+                            {% if emailaddress.verified %}
+                            <span class="badge bg-success">{% trans "Verified" %}</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">{% trans "Unverified" %}</span>
+                            {% endif %}
+                            {% if emailaddress.primary %}
+                            <span class="badge bg-primary">{% trans "Primary" %}</span>
+                            {% endif %}
+                          </span>
+                        </div>
+                      </label>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  
+                  <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <button class="btn btn-outline-primary btn-sm" type="submit" name="action_primary">
+                      <i class="fas fa-star me-1"></i>{% trans "Make Primary" %}
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" type="submit" name="action_send">
+                      <i class="fas fa-paper-plane me-1"></i>{% trans "Re-send Verification" %}
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" type="submit" name="action_remove">
+                      <i class="fas fa-trash-alt me-1"></i>{% trans "Remove" %}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+              <div class="card-header bg-light">
+                <h5 class="card-title mb-0 fs-6">{% trans "Add Email Address" %}</h5>
+              </div>
+              <div class="card-body">
+                <form method="post" action="{% url 'account_email' %}">
+                  {% csrf_token %}
+                  
+                  {% if form.errors %}
+                  <div class="alert alert-danger" role="alert">
+                    {% if form.non_field_errors %}
+                      {% for error in form.non_field_errors %}
+                        {{ error }}
+                      {% endfor %}
+                    {% else %}
+                      {% trans "Please correct the errors below." %}
+                    {% endif %}
+                  </div>
+                  {% endif %}
+                  
+                  {% for field in form %}
+                  <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field|add_class:"form-control" }}
+                    {% if field.errors %}
+                      <div class="text-danger small mt-1">
+                        {% for error in field.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                  
+                  <div class="d-grid gap-2">
+                    <button class="btn btn-primary" name="action_add" type="submit">
+                      <i class="fas fa-plus me-1"></i>{% trans "Add Email" %}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-center mt-4">
+              <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>{% trans "Back to Profile" %}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script type="text/javascript">
+(function() {
+  const message = "{% trans 'Do you really want to remove the selected email address?' %}";
+  const actions = document.getElementsByName('action_remove');
+  
+  if (actions.length) {
+    actions[0].addEventListener("click", function(e) {
+      if (!confirm(message)) {
+        e.preventDefault();
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

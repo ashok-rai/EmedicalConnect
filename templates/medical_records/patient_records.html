@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Patient Medical Records - MedBooking{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <h2 class="mb-4">
+                <i class="fas fa-folder-open text-primary me-2"></i> 
+                {% if patient %}
+                    Medical Records for {{ patient.user.get_full_name }}
+                {% else %}
+                    Select Patient
+                {% endif %}
+            </h2>
+            
+            {% if not patient %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-user-injured text-primary me-2"></i> Select a Patient to View Records
+                    </h5>
+                    
+                    <form method="get" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" name="search" class="form-control" placeholder="Search patient by name or email..." value="{{ search_query }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-1"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    {% if patients %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Records</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in patients %}
+                                <tr>
+                                    <td>{{ patient.user.get_full_name }}</td>
+                                    <td>{{ patient.user.email }}</td>
+                                    <td>{{ patient.phone_number|default:"N/A" }}</td>
+                                    <td>{{ patient.medical_records.count }}</td>
+                                    <td>
+                                        <a href="{% url 'medical_records:patient_records_detail' patient.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-folder-open me-1"></i> View Records
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5>No Patients Found</h5>
+                        <p class="text-muted">
+                            {% if search_query %}
+                                No patients match your search query.
+                            {% else %}
+                                You have no patients with appointment history.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-filter text-primary me-2"></i> Filter Records
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="get">
+                                <div class="mb-3">
+                                    <label class="form-label">Record Type</label>
+                                    <div class="list-group">
+                                        <a href="{% url 'medical_records:patient_records_detail' patient.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if not current_type %}active{% endif %}">
+                                            All Records
+                                            <span class="badge bg-primary rounded-pill">{{ record_counts.all }}</span>
+                                        </a>
+                                        <a href="{% url 'medical_records:patient_records_detail' patient.id %}?type=lab_report" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if current_type == 'lab_report' %}active{% endif %}">
+                                            Laboratory Reports
+                                            <span class="badge bg-primary rounded-pill">{{ record_counts.lab_report }}</span>
+                                        </a>
+                                        <a href="{% url 'medical_records:patient_records_detail' patient.id %}?type=prescription" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if current_type == 'prescription' %}active{% endif %}">
+                                            Prescriptions
+                                            <span class="badge bg-primary rounded-pill">{{ record_counts.prescription }}</span>
+                                        </a>
+                                        <a href="{% url 'medical_records:patient_records_detail' patient.id %}?type=medical_image" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if current_type == 'medical_image' %}active{% endif %}">
+                                            Medical Images
+                                            <span class="badge bg-primary rounded-pill">{{ record_counts.medical_image }}</span>
+                                        </a>
+                                        <a href="{% url 'medical_records:patient_records_detail' patient.id %}?type=diagnosis" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if current_type == 'diagnosis' %}active{% endif %}">
+                                            Diagnosis Reports
+                                            <span class="badge bg-primary rounded-pill">{{ record_counts.diagnosis }}</span>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="search" class="form-label">Search Records</label>
+                                    <div class="input-group">
+                                        <input type="text" id="search" name="search" class="form-control" placeholder="Search..." value="{{ search_query }}">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <a href="{% url 'medical_records:add_record' %}?patient={{ patient.id }}" class="btn btn-success">
+                                    <i class="fas fa-plus-circle me-1"></i> Add New Record
+                                </a>
+                                <a href="{% url 'medical_records:patient_records' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-users me-1"></i> Change Patient
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user-circle text-primary me-2"></i> Patient Info
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-circle me-3">
+                                    <span class="avatar-text">{{ patient.user.get_full_name|first }}</span>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">{{ patient.user.get_full_name }}</h5>
+                                    <p class="text-muted mb-0">{{ patient.user.email }}</p>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-phone text-primary me-2"></i> 
+                                {{ patient.phone_number|default:"No phone number" }}
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                {% if patient.date_of_birth %}
+                                    {{ patient.date_of_birth|date:"F d, Y" }} 
+                                    ({{ patient.date_of_birth|timesince }} old)
+                                {% else %}
+                                    No birth date
+                                {% endif %}
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-venus-mars text-primary me-2"></i>
+                                {{ patient.get_gender_display|default:"Not specified" }}
+                            </div>
+                            <div>
+                                <i class="fas fa-tint text-danger me-2"></i>
+                                Blood Group: {{ patient.blood_group|default:"Not specified" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-9">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-file-medical me-2 text-primary"></i> 
+                                {% if current_type %}
+                                    {{ current_type_display }} Records
+                                {% else %}
+                                    All Medical Records
+                                {% endif %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if records %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 15%;">Date</th>
+                                            <th style="width: 15%;">Type</th>
+                                            <th style="width: 40%;">Title</th>
+                                            <th style="width: 15%;">Added By</th>
+                                            <th style="width: 15%;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for record in records %}
+                                        <tr>
+                                            <td>{{ record.record_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if record.record_type == 'lab_report' %}bg-info
+                                                    {% elif record.record_type == 'prescription' %}bg-primary
+                                                    {% elif record.record_type == 'medical_image' %}bg-success
+                                                    {% elif record.record_type == 'diagnosis' %}bg-warning
+                                                    {% else %}bg-secondary{% endif %}
+                                                ">
+                                                    {{ record.get_record_type_display }}
+                                                </span>
+                                            </td>
+                                            <td>{{ record.title }}</td>
+                                            <td>
+                                                {% if record.created_by %}
+                                                    Dr. {{ record.created_by.user.get_full_name }}
+                                                {% else %}
+                                                    Patient
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'medical_records:record_detail' record.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if record.created_by.user == request.user or request.user.is_admin %}
+                                                <a href="{% url 'medical_records:edit_record' record.id %}" class="btn btn-sm btn-outline-secondary ms-1">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% if record.file %}
+                                                <a href="{% url 'medical_records:download_record_file' record.id %}" class="btn btn-sm btn-outline-success ms-1">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            {% if records.has_other_pages %}
+                            <div class="d-flex justify-content-center mt-4">
+                                <nav aria-label="Medical records pagination">
+                                    <ul class="pagination">
+                                        {% if records.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if current_type %}&type={{ current_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ records.previous_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                        
+                                        {% for i in records.paginator.page_range %}
+                                            {% if records.number == i %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ i }}</span>
+                                            </li>
+                                            {% elif i > records.number|add:'-3' and i < records.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ i }}{% if current_type %}&type={{ current_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ i }}</a>
+                                            </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if records.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ records.next_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ records.paginator.num_pages }}{% if current_type %}&type={{ current_type }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                            {% endif %}
+                            
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                                <h4>No Records Found</h4>
+                                <p class="text-muted">
+                                    {% if search_query or current_type %}
+                                        No records match your search criteria. Try adjusting your filters.
+                                    {% else %}
+                                        This patient doesn't have any medical records yet.
+                                    {% endif %}
+                                </p>
+                                <a href="{% url 'medical_records:add_record' %}?patient={{ patient.id }}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus-circle me-1"></i> Add New Record
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+        background-color: var(--bs-primary);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+    }
+</style>
+{% endblock %}
