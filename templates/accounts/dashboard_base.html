@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% if user.is_patient %}
+                        <a href="{% url 'accounts:dashboard' %}" class="list-group-item list-group-item-action {% if active_tab == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-home me-2"></i> Overview
+                        </a>
+                        <a href="{% url 'appointments:book_appointment' %}" class="list-group-item list-group-item-action {% if active_tab == 'book' %}active{% endif %}">
+                            <i class="fas fa-calendar-plus me-2"></i> Book Appointment
+                        </a>
+                        <a href="{% url 'appointments:my_appointments' %}" class="list-group-item list-group-item-action {% if active_tab == 'appointments' %}active{% endif %}">
+                            <i class="fas fa-calendar-check me-2"></i> My Appointments
+                        </a>
+                        <a href="{% url 'medical_records:record_list' %}" class="list-group-item list-group-item-action {% if active_tab == 'records' %}active{% endif %}">
+                            <i class="fas fa-file-medical me-2"></i> Medical Records
+                        </a>
+                        <a href="{% url 'messaging:conversation_list' %}" class="list-group-item list-group-item-action {% if active_tab == 'messages' %}active{% endif %}">
+                            <i class="fas fa-envelope me-2"></i> Messages
+                        </a>
+                    {% elif user.is_doctor %}
+                        <a href="{% url 'accounts:dashboard' %}" class="list-group-item list-group-item-action {% if active_tab == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-home me-2"></i> Overview
+                        </a>
+                        <a href="{% url 'appointments:doctor_appointments' %}" class="list-group-item list-group-item-action {% if active_tab == 'appointments' %}active{% endif %}">
+                            <i class="fas fa-calendar-check me-2"></i> Appointments
+                        </a>
+                        <a href="{% url 'accounts:doctor_list' %}" class="list-group-item list-group-item-action {% if active_tab == 'patients' %}active{% endif %}">
+                            <i class="fas fa-user-injured me-2"></i> My Patients
+                        </a>
+                        <a href="{% url 'messaging:conversation_list' %}" class="list-group-item list-group-item-action {% if active_tab == 'messages' %}active{% endif %}">
+                            <i class="fas fa-envelope me-2"></i> Messages
+                        </a>
+                    {% elif user.is_admin %}
+                        <a href="{% url 'accounts:dashboard' %}" class="list-group-item list-group-item-action {% if active_tab == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-home me-2"></i> Overview
+                        </a>
+                        <a href="{% url 'accounts:admin_doctor_list' %}" class="list-group-item list-group-item-action {% if active_tab == 'doctors' %}active{% endif %}">
+                            <i class="fas fa-user-md me-2"></i> Doctors
+                        </a>
+                        <a href="{% url 'accounts:admin_patient_list' %}" class="list-group-item list-group-item-action {% if active_tab == 'patients' %}active{% endif %}">
+                            <i class="fas fa-user-injured me-2"></i> Patients
+                        </a>
+                        <a href="{% url 'appointments:admin_all_appointments' %}" class="list-group-item list-group-item-action {% if active_tab == 'appointments' %}active{% endif %}">
+                            <i class="fas fa-calendar me-2"></i> Appointments
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cogs me-2"></i> Admin Panel
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'accounts:profile' %}" class="list-group-item list-group-item-action {% if active_tab == 'profile' %}active{% endif %}">
+                        <i class="fas fa-user-cog me-2"></i> Profile Settings
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Need Help?</h5>
+                    <p class="card-text small">Contact our support team for assistance with your account or appointments.</p>
+                    <a href="{% url 'contact' %}" class="btn btn-sm btn-outline-primary">Contact Support</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            {% block dashboard_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

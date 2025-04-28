@@ -1,195 +1,335 @@
-{% extends 'base.html' %}
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
 
 {% block title %}Doctor Dashboard - MedBooking{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Welcome, Dr. {{ current_user.doctor.last_name }}!</h1>
-    
-    <!-- Today's Schedule -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Today's Appointments</h4>
+{% block dashboard_content %}
+<div class="dashboard-header mb-4">
+    <h2 class="mb-3">Welcome, Dr. {{ user.get_full_name|default:user.email }}!</h2>
+    <p class="text-muted">Here's an overview of your appointments and patient information.</p>
+</div>
+
+<!-- Dashboard Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Today's Appointments</h6>
+                        <h2 class="display-6 mb-0">{{ todays_appointments_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar-day fa-3x opacity-50"></i>
+                    </div>
                 </div>
-                <div class="card-body">
-                    {% if today_appointments %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                <p class="card-text mt-3">
+                    <a href="{% url 'appointments:doctor_appointments' %}" class="text-white text-decoration-none">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Patients</h6>
+                        <h2 class="display-6 mb-0">{{ total_patients_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-user-injured fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="#" class="text-white text-decoration-none">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Upcoming Appointments</h6>
+                        <h2 class="display-6 mb-0">{{ upcoming_appointments_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar-check fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="{% url 'appointments:doctor_appointments' %}" class="text-white text-decoration-none">View Upcoming <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Unread Messages</h6>
+                        <h2 class="display-6 mb-0">{{ unread_messages_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-envelope fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="{% url 'messaging:conversation_list' %}" class="text-white text-decoration-none">View Messages <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Schedule -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Today's Schedule</h5>
+                <a href="{% url 'appointments:doctor_appointments' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if todays_appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Patient</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in todays_appointments %}
                                     <tr>
-                                        <th>Time</th>
-                                        <th>Patient</th>
-                                        <th>Reason</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for appointment in today_appointments %}
-                                        <tr>
-                                            <td>{{ appointment.time.strftime('%I:%M %p') }}</td>
-                                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
-                                            <td class="text-truncate" style="max-width: 250px;">{{ appointment.reason }}</td>
-                                            <td><span class="badge bg-primary">{{ appointment.status }}</span></td>
-                                            <td>
-                                                <a href="{{ url_for('appointment.view', appointment_id=appointment.id) }}" class="btn btn-sm btn-info">
+                                        <td>
+                                            <strong>{{ appointment.appointment_time|time:"g:i A" }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ appointment.patient.user.get_full_name }}
+                                        </td>
+                                        <td>
+                                            <span class="text-truncate d-inline-block" style="max-width: 200px;">
+                                                {{ appointment.reason|truncatechars:50 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ appointment.status|lower }}">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{{ url_for('doctor.patient_records', patient_id=appointment.patient.id) }}" class="btn btn-sm btn-warning">
-                                                    <i class="fas fa-file-medical"></i>
-                                                </a>
-                                                <a href="{{ url_for('chat.room', user_id=appointment.patient.user_id) }}" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-comment"></i>
-                                                </a>
-                                                <form action="{{ url_for('appointment.complete', appointment_id=appointment.id) }}" method="POST" class="d-inline">
-                                                    <button type="submit" class="btn btn-sm btn-primary complete-appointment">
+                                                {% if appointment.status == 'scheduled' %}
+                                                    <a href="{% url 'appointments:complete_appointment' appointment.id %}" class="btn btn-outline-success">
                                                         <i class="fas fa-check"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="text-center py-4">No appointments scheduled for today.</p>
-                    {% endif %}
-                </div>
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'messaging:start_conversation' appointment.patient.user.id %}" class="btn btn-outline-info">
+                                                    <i class="fas fa-comment-dots"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
+                        <h5>No Appointments Today</h5>
+                        <p class="text-muted">You don't have any appointments scheduled for today.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Patients & Messages -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Patients</h5>
+                <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_patients %}
+                    <div class="list-group list-group-flush">
+                        {% for patient in recent_patients %}
+                            <div class="list-group-item d-flex align-items-center">
+                                <div class="avatar-circle bg-primary text-white me-3">
+                                    {{ patient.user.get_full_name|make_list|first }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ patient.user.get_full_name }}</h6>
+                                    <p class="text-muted small mb-0">
+                                        Last visit: {{ patient.last_appointment|date:"M d, Y" }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary">
+                                            <i class="fas fa-user"></i>
+                                        </a>
+                                        <a href="{% url 'messaging:start_conversation' patient.user.id %}" class="btn btn-outline-info">
+                                            <i class="fas fa-comment-dots"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-injured fa-3x text-muted mb-3"></i>
+                        <h5>No Recent Patients</h5>
+                        <p class="text-muted">You haven't treated any patients yet.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
     
-    <!-- Dashboard Overview -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card stat-card h-100">
-                <div class="card-body">
-                    <i class="fas fa-calendar-check text-primary mb-3" style="font-size: 2.5rem;"></i>
-                    <div class="stat-number">{{ today_appointments|length }}</div>
-                    <div class="stat-label">Today's Appointments</div>
-                </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Messages</h5>
+                <a href="{% url 'messaging:conversation_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card stat-card h-100">
-                <div class="card-body">
-                    <i class="fas fa-calendar-alt text-success mb-3" style="font-size: 2.5rem;"></i>
-                    <div class="stat-number">{{ upcoming_appointments|length }}</div>
-                    <div class="stat-label">Upcoming Appointments</div>
-                </div>
-                <div class="card-footer bg-transparent border-top-0 text-center">
-                    <a href="{{ url_for('appointment.manage') }}" class="btn btn-sm btn-outline-success">View All</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card stat-card h-100">
-                <div class="card-body">
-                    <i class="fas fa-envelope text-info mb-3" style="font-size: 2.5rem;"></i>
-                    <div class="stat-number">{{ unread_messages }}</div>
-                    <div class="stat-label">Unread Messages</div>
-                </div>
-                <div class="card-footer bg-transparent border-top-0 text-center">
-                    <a href="{{ url_for('chat.index') }}" class="btn btn-sm btn-outline-info">View Messages</a>
-                </div>
+            <div class="card-body">
+                {% if recent_messages %}
+                    <div class="list-group list-group-flush">
+                        {% for message in recent_messages %}
+                            <a href="{% url 'messaging:conversation_detail' message.conversation.id %}" class="list-group-item list-group-item-action {% if not message.is_read %}unread-message{% endif %}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ message.sender.get_full_name|default:message.sender.email }}</h6>
+                                    <small class="text-muted">{{ message.timestamp|timesince }} ago</small>
+                                </div>
+                                <p class="mb-1 text-truncate">{{ message.content }}</p>
+                                {% if not message.is_read %}
+                                    <span class="badge bg-primary">New</span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                        <h5>No Messages</h5>
+                        <p class="text-muted">You don't have any recent messages.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Quick Actions</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('appointment.manage') }}" class="btn btn-outline-primary d-block py-3">
-                                <i class="fas fa-calendar mb-2" style="font-size: 2rem;"></i><br>
-                                Manage Appointments
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('doctor.patients') }}" class="btn btn-outline-success d-block py-3">
-                                <i class="fas fa-users mb-2" style="font-size: 2rem;"></i><br>
-                                View Patients
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('chat.index') }}" class="btn btn-outline-info d-block py-3">
-                                <i class="fas fa-comment-medical mb-2" style="font-size: 2rem;"></i><br>
-                                Patient Messages
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('health_record.upload') }}" class="btn btn-outline-warning d-block py-3">
-                                <i class="fas fa-file-upload mb-2" style="font-size: 2rem;"></i><br>
-                                Upload Records
-                            </a>
-                        </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'appointments:doctor_appointments' %}" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-calendar-alt fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">View Schedule</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'messaging:new_conversation' %}" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-comment-medical fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">Message Patient</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <a href="#" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-file-prescription fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">Create Prescription</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'accounts:profile' %}" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-user-md fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">Update Profile</h6>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Upcoming Appointments -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Upcoming Appointments</h4>
-                    <a href="{{ url_for('appointment.manage') }}" class="btn btn-sm btn-light">View All</a>
-                </div>
-                <div class="card-body">
-                    {% if upcoming_appointments %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Patient</th>
-                                        <th>Reason</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for appointment in upcoming_appointments %}
-                                        <tr>
-                                            <td>{{ appointment.date.strftime('%d %b, %Y') }}</td>
-                                            <td>{{ appointment.time.strftime('%I:%M %p') }}</td>
-                                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
-                                            <td class="text-truncate" style="max-width: 250px;">{{ appointment.reason }}</td>
-                                            <td>
-                                                <a href="{{ url_for('appointment.view', appointment_id=appointment.id) }}" class="btn btn-sm btn-info">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ url_for('chat.room', user_id=appointment.patient.user_id) }}" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-comment"></i>
-                                                </a>
-                                                <form action="{{ url_for('appointment.cancel', appointment_id=appointment.id) }}" method="POST" class="d-inline">
-                                                    <button type="submit" class="btn btn-sm btn-danger cancel-appointment">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="text-center py-4">No upcoming appointments scheduled.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .badge.bg-scheduled {
+        background-color: #1a73e8;
+    }
+    
+    .badge.bg-completed {
+        background-color: #28a745;
+    }
+    
+    .badge.bg-cancelled {
+        background-color: #dc3545;
+    }
+    
+    .badge.bg-no_show {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .badge.bg-rescheduled {
+        background-color: #6c757d;
+    }
+</style>
 {% endblock %}

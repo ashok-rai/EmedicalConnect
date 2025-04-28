@@ -1,170 +1,341 @@
-{% extends 'base.html' %}
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
 
 {% block title %}Admin Dashboard - MedBooking{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Admin Dashboard</h1>
-    
-    <!-- Dashboard Stats -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body text-center">
-                    <h3 class="display-4">{{ patient_count }}</h3>
-                    <p class="lead mb-0">Patients</p>
-                </div>
-                <div class="card-footer bg-transparent border-top-0 text-center">
-                    <a href="{{ url_for('admin.patients') }}" class="btn btn-sm btn-light">View All</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body text-center">
-                    <h3 class="display-4">{{ doctor_count }}</h3>
-                    <p class="lead mb-0">Doctors</p>
-                </div>
-                <div class="card-footer bg-transparent border-top-0 text-center">
-                    <a href="{{ url_for('admin.doctors') }}" class="btn btn-sm btn-light">View All</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body text-center">
-                    <h3 class="display-4">{{ scheduled_count + completed_count + cancelled_count }}</h3>
-                    <p class="lead mb-0">Total Appointments</p>
-                </div>
-                <div class="card-footer bg-transparent border-top-0 text-center">
-                    <a href="{{ url_for('admin.appointments') }}" class="btn btn-sm btn-light">View All</a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Appointment Status -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Appointment Statistics</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 text-center mb-3">
-                            <div class="border rounded p-3">
-                                <h5 class="text-primary">Scheduled</h5>
-                                <h3 class="display-5">{{ scheduled_count }}</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-center mb-3">
-                            <div class="border rounded p-3">
-                                <h5 class="text-success">Completed</h5>
-                                <h3 class="display-5">{{ completed_count }}</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-center mb-3">
-                            <div class="border rounded p-3">
-                                <h5 class="text-danger">Cancelled</h5>
-                                <h3 class="display-5">{{ cancelled_count }}</h3>
-                            </div>
-                        </div>
+{% block dashboard_content %}
+<div class="dashboard-header mb-4">
+    <h2 class="mb-3">Administration Dashboard</h2>
+    <p class="text-muted">Manage doctors, patients, and monitor system activity.</p>
+</div>
+
+<!-- Dashboard Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Doctors</h6>
+                        <h2 class="display-6 mb-0">{{ total_doctors_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-user-md fa-3x opacity-50"></i>
                     </div>
                 </div>
+                <p class="card-text mt-3">
+                    <a href="{% url 'accounts:admin_doctor_list' %}" class="text-white text-decoration-none">Manage Doctors <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
             </div>
         </div>
     </div>
     
-    <!-- Quick Actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Admin Actions</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('admin.doctors') }}" class="btn btn-outline-primary d-block py-3">
-                                <i class="fas fa-user-md mb-2" style="font-size: 2rem;"></i><br>
-                                Manage Doctors
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('admin.patients') }}" class="btn btn-outline-success d-block py-3">
-                                <i class="fas fa-users mb-2" style="font-size: 2rem;"></i><br>
-                                Manage Patients
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('admin.appointments') }}" class="btn btn-outline-info d-block py-3">
-                                <i class="fas fa-calendar-check mb-2" style="font-size: 2rem;"></i><br>
-                                View Appointments
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <a href="{{ url_for('admin.feedback') }}" class="btn btn-outline-warning d-block py-3">
-                                <i class="fas fa-comment-dots mb-2" style="font-size: 2rem;"></i><br>
-                                View Feedback
-                            </a>
-                        </div>
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Patients</h6>
+                        <h2 class="display-6 mb-0">{{ total_patients_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-user-injured fa-3x opacity-50"></i>
                     </div>
                 </div>
+                <p class="card-text mt-3">
+                    <a href="{% url 'accounts:admin_patient_list' %}" class="text-white text-decoration-none">Manage Patients <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
             </div>
         </div>
     </div>
     
-    <!-- Recent Appointments -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Recent Appointments</h4>
-                    <a href="{{ url_for('admin.appointments') }}" class="btn btn-sm btn-light">View All</a>
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Appointments Today</h6>
+                        <h2 class="display-6 mb-0">{{ todays_appointments_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar-check fa-3x opacity-50"></i>
+                    </div>
                 </div>
-                <div class="card-body">
-                    {% if recent_appointments %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                <p class="card-text mt-3">
+                    <a href="{% url 'appointments:admin_all_appointments' %}" class="text-white text-decoration-none">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card dashboard-stat-card bg-warning text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Records Created</h6>
+                        <h2 class="display-6 mb-0">{{ total_records_count }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-file-medical fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <p class="card-text mt-3">
+                    <a href="#" class="text-white text-decoration-none">View Records <i class="fas fa-arrow-right ms-1"></i></a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Registrations -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Registrations</h5>
+                <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Registered On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Time</th>
-                                        <th>Patient</th>
-                                        <th>Doctor</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
+                                        <td>{{ user.get_full_name|default:user.email }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            <span class="badge {% if user.role == 'doctor' %}bg-primary{% elif user.role == 'patient' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ user.get_role_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="#" class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="#" class="btn btn-outline-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {% for appointment in recent_appointments %}
-                                        <tr>
-                                            <td>{{ appointment.date.strftime('%d %b, %Y') }}</td>
-                                            <td>{{ appointment.time.strftime('%I:%M %p') }}</td>
-                                            <td>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</td>
-                                            <td>Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</td>
-                                            <td>
-                                                {% if appointment.status == 'scheduled' %}
-                                                    <span class="badge bg-primary">{{ appointment.status }}</span>
-                                                {% elif appointment.status == 'completed' %}
-                                                    <span class="badge bg-success">{{ appointment.status }}</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">{{ appointment.status }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ appointment.created_at.strftime('%d %b, %Y') }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5>No Recent Registrations</h5>
+                        <p class="text-muted">There are no recent user registrations to display.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Appointments & System Statistics -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Appointments</h5>
+                <a href="{% url 'appointments:admin_all_appointments' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_appointments %}
+                    <div class="list-group list-group-flush">
+                        {% for appointment in recent_appointments %}
+                            <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        Dr. {{ appointment.doctor.user.get_full_name }} 
+                                        <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                                        {{ appointment.patient.user.get_full_name }}
+                                    </h6>
+                                    <small class="badge bg-{{ appointment.status|lower }}">
+                                        {{ appointment.get_status_display }}
+                                    </small>
+                                </div>
+                                <p class="mb-1 small text-muted">
+                                    <i class="fas fa-calendar-day me-1"></i>
+                                    {{ appointment.appointment_date|date:"M d, Y" }} at 
+                                    {{ appointment.appointment_time|time:"g:i A" }}
+                                </p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                        <h5>No Recent Appointments</h5>
+                        <p class="text-muted">There are no recent appointments to display.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">System Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Total Users</h6>
+                            <small class="text-muted">All registered users</small>
                         </div>
-                    {% else %}
-                        <p class="text-center py-4">No appointments recorded yet.</p>
-                    {% endif %}
+                        <span class="badge bg-primary rounded-pill">{{ total_users_count }}</span>
+                    </div>
+                    
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Total Appointments</h6>
+                            <small class="text-muted">All time appointments</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ total_appointments_count }}</span>
+                    </div>
+                    
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Completed Appointments</h6>
+                            <small class="text-muted">Successfully completed</small>
+                        </div>
+                        <span class="badge bg-success rounded-pill">{{ completed_appointments_count }}</span>
+                    </div>
+                    
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Cancelled Appointments</h6>
+                            <small class="text-muted">Cancelled by patient or doctor</small>
+                        </div>
+                        <span class="badge bg-danger rounded-pill">{{ cancelled_appointments_count }}</span>
+                    </div>
+                    
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">Average Rating</h6>
+                            <small class="text-muted">Based on patient feedback</small>
+                        </div>
+                        <div>
+                            <span class="rating">
+                                {% for i in '12345'|make_list %}
+                                    {% if forloop.counter <= average_rating|floatformat:"0" %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="ms-2">{{ average_rating|floatformat:1 }}/5</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Administrative Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'admin:index' %}" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-cogs fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">Django Admin</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'accounts:admin_doctor_list' %}" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-user-md fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">Manage Doctors</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'accounts:admin_patient_list' %}" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-user-injured fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">Manage Patients</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-6">
+                        <a href="{% url 'accounts:profile' %}" class="text-decoration-none">
+                            <div class="card text-center h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <i class="fas fa-user-cog fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">Account Settings</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge.bg-scheduled {
+        background-color: #1a73e8;
+    }
+    
+    .badge.bg-completed {
+        background-color: #28a745;
+    }
+    
+    .badge.bg-cancelled {
+        background-color: #dc3545;
+    }
+    
+    .badge.bg-no_show {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .badge.bg-rescheduled {
+        background-color: #6c757d;
+    }
+    
+    .rating {
+        color: #ffc107;
+    }
+</style>
 {% endblock %}
