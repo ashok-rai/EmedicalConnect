@@ -16,9 +16,19 @@ class Conversation(models.Model):
     def __str__(self):
         return f"Conversation {self.id} - {', '.join([user.email for user in self.participants.all()])}"
     
-    def get_other_participant(self, user):
+    def get_other_participant(self, user=None):
         """Get the other participant in a conversation."""
+        if user is None:
+            return self.participants.first()
         return self.participants.exclude(id=user.id).first()
+    
+    def get_unread_messages_count(self):
+        """Get the count of unread messages for a user in this conversation."""
+        # if user is None:
+        #     return self.messages.filter(is_read=False).count()
+        sender = self.get_other_participant()
+        print('sender', sender)
+        return self.messages.all().filter(is_read=False, sender=sender).count()
 
 
 class Message(models.Model):

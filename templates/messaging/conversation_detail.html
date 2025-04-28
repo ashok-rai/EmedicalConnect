@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Conversation with {{ other_user.get_full_name|default:other_user.email }} | MedBooking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Conversations List (Mobile: Collapsible) -->
+        <div class="col-md-4 mb-4">
+            <div class="d-md-none mb-3">
+                <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#conversationsList" aria-expanded="false">
+                    <i class="fas fa-list me-2"></i> Show Conversations
+                </button>
+            </div>
+            
+            <div class="collapse d-md-block" id="conversationsList">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Conversations</h5>
+                        <a href="{% url 'messaging:new_conversation' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                    <div class="list-group list-group-flush conversation-list">
+
+
+                        {% for item in request.user.conversations.all %}
+                            {% with other=item.get_other_participant %}
+                            <a href="{% url 'messaging:conversation_detail' item.id %}" class="list-group-item list-group-item-action {% if conversation.id == item.id %}active{% endif %}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ other.get_full_name|default:other.email }}</h6>
+                                    {% with unread_count=item.get_unread_messages_count %}
+                                        {% if unread_count > 0 %}
+                                            <span class="badge rounded-pill bg-primary">{{ unread_count }}</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                                
+                                {% with last_message=item.messages.last %}
+                                    {% if last_message %}
+                                        <p class="mb-1 text-truncate small">
+                                            {% if last_message.sender == request.user %}
+                                                <i class="fas fa-reply text-muted me-1"></i>
+                                            {% endif %}
+                                            {{ last_message.content }}
+                                        </p>
+                                        <small class="text-muted">{{ last_message.timestamp|timesince }} ago</small>
+                                    {% else %}
+                                        <p class="mb-1 text-muted small"><i>No messages yet</i></p>
+                                    {% endif %}
+                                {% endwith %}
+                            </a>
+                            {% endwith %}
+                        {% empty %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-comments fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">No conversations yet</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversation Detail -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <!-- Conversation Header -->
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-user-circle fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ other_user.get_full_name|default:other_user.email }}</h5>
+                            {% if other_user.role == 'doctor' %}
+                                <small class="text-primary"><i class="fas fa-user-md me-1"></i> Doctor</small>
+                            {% elif other_user.role == 'patient' %}
+                                <small class="text-success"><i class="fas fa-user me-1"></i> Patient</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{% url 'messaging:conversation_list' %}" class="btn btn-sm btn-outline-secondary d-md-none">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+                
+                <!-- Chat Messages -->
+                <div class="card-body p-0">
+                    <div class="chat-container p-3" id="chatContainer">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="message-wrapper {% if message.sender == request.user %}message-out{% else %}message-in{% endif %}">
+                                    <div class="message-bubble">
+                                        <div class="message-content">{{ message.content }}</div>
+                                        <div class="message-info">
+                                            <small class="text-muted">{{ message.timestamp|date:"M d, Y, g:i a" }}</small>
+                                            {% if message.sender == request.user and message.is_read %}
+                                                <small class="ms-2 text-success"><i class="fas fa-check-double"></i></small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-comment-dots fa-3x text-muted mb-3"></i>
+                                <h5>No Messages Yet</h5>
+                                <p class="text-muted">Send a message to start the conversation</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Message Input -->
+                <div class="card-footer bg-white">
+                    <form id="messageForm" class="message-form" action="{% url 'messaging:send_message' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
+                        <div class="input-group">
+                            <textarea class="form-control" name="content" placeholder="Type your message..." rows="1" required></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- For AJAX CSRF Token -->
+                <div style="display: none">
+                    <form id="csrf-form">
+                        {% csrf_token %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: 400px;
+        overflow-y: auto;
+    }
+    
+    .message-wrapper {
+        margin-bottom: 15px;
+        display: flex;
+    }
+    
+    .message-in {
+        justify-content: flex-start;
+    }
+    
+    .message-out {
+        justify-content: flex-end;
+    }
+    
+    .message-bubble {
+        max-width: 75%;
+        padding: 10px 15px;
+        border-radius: 15px;
+    }
+    
+    .message-in .message-bubble {
+        background-color: #f0f2f5;
+    }
+    
+    .message-out .message-bubble {
+        background-color: #d1e7ff;
+    }
+    
+    .message-content {
+        margin-bottom: 5px;
+        word-wrap: break-word;
+    }
+    
+    .message-info {
+        text-align: right;
+        font-size: 0.7rem;
+    }
+    
+    textarea.form-control {
+        resize: none;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/conversation.js' %}"></script>
+{% endblock %}

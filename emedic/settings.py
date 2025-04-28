@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'appointments',
     'medical_records',
     'messaging',
+    'widget_tweaks',
 ]
 
 # Site ID for django-allauth
@@ -85,6 +86,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'messaging.context_processors.messaging_context',
             ],
         },
     },

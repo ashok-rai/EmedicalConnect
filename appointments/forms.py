@@ -75,8 +75,16 @@ class AppointmentForm(forms.ModelForm):
         """Save with patient information"""
         appointment = super().save(commit=False)
         
-        if self.patient and not appointment.patient:
-            appointment.patient = self.patient
+        try:
+            if self.patient and not appointment.patient:
+                appointment.patient = self.patient
+        except Exception as e:
+            print(f"Error: {e}")
+            # Log the error or handle it as needed
+            # Optionally, you can raise a ValidationError or handle it differently
+        
+        # if self.patient and not appointment.patient:
+        #     appointment.patient = self.patient
         
         if commit:
             appointment.save()

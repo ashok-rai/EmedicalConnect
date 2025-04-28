@@ -1,0 +1,101 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}Reschedule Appointment - MedBooking{% endblock %}
+
+{% block dashboard_content %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-sync-alt me-2 text-warning"></i> Reschedule Appointment
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="card bg-light mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Current Appointment Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                        <p><strong>Specialization:</strong> {{ appointment.doctor.specialization }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date:</strong> {{ appointment.appointment_date|date:"l, F j, Y" }}</p>
+                        <p><strong>Time:</strong> {{ appointment.appointment_time|time:"g:i A" }}</p>
+                    </div>
+                </div>
+                
+                {% if appointment.doctor.available_days %}
+                    <div class="alert alert-info">
+                        <p class="mb-1"><i class="fas fa-info-circle me-2"></i> <strong>Doctor Availability:</strong></p>
+                        <p class="mb-0">Available on: {{ appointment.doctor.available_days }}</p>
+                        {% if appointment.doctor.available_time_start and appointment.doctor.available_time_end %}
+                            <p class="mb-0">Hours: {{ appointment.doctor.available_time_start|time:"g:i A" }} - {{ appointment.doctor.available_time_end|time:"g:i A" }}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="id_appointment_date" class="form-label">New Appointment Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                            <input type="date" id="id_appointment_date" name="appointment_date" class="form-control" required 
+                                   value="{{ form.appointment_date.value|date:'Y-m-d' }}">
+                        </div>
+                        {% if form.appointment_date.errors %}
+                            <div class="text-danger">
+                                {{ form.appointment_date.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Select a new date for your appointment</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="id_appointment_time" class="form-label">New Appointment Time</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                            <input type="time" id="id_appointment_time" name="appointment_time" class="form-control" required
+                                   value="{{ form.appointment_time.value|time:'H:i' }}">
+                        </div>
+                        {% if form.appointment_time.errors %}
+                            <div class="text-danger">
+                                {{ form.appointment_time.errors }}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Select a new time slot for your appointment</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-outline-secondary me-md-2">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-sync-alt me-1"></i> Reschedule Appointment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set minimum date to today for the date picker
+        const datePicker = document.getElementById('id_appointment_date');
+        const today = new Date().toISOString().split('T')[0];
+        datePicker.setAttribute('min', today);
+    });
+</script>
+{% endblock %}

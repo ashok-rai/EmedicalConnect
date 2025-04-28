@@ -1,5 +1,5 @@
 {% load static %}
-{% load bootstrap5 %}
+{% load django_bootstrap5 %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +15,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/messaging.css' %}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -55,7 +56,9 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell"></i>
-                                <span class="badge rounded-pill bg-danger" id="notification-count">0</span>
+                                {% if notification_count > 0 %}
+                                    <span class="badge rounded-pill bg-danger" id="notification-count">{{ notification_count }}</span>
+                                {% endif %}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" id="notifications-dropdown">
                                 <li><a class="dropdown-item" href="{% url 'messaging:notification_list' %}">See all notifications</a></li>
@@ -66,6 +69,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'messaging:conversation_list' %}">
                                 <i class="fas fa-envelope"></i>
+                                {% if unread_message_count > 0 %}
+                                    <span class="badge rounded-pill bg-danger">{{ unread_message_count }}</span>
+                                {% endif %}
                             </a>
                         </li>
                         
@@ -157,6 +163,7 @@
     
     <!-- Custom JS -->
     <script src="{% static 'js/scripts.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>

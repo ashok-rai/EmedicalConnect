@@ -21,4 +21,8 @@ urlpatterns = [
     # Notifications
     path('notifications/', views.notification_list, name='notification_list'),
     path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    
+    # API endpoints
+    path('api/notifications/', views.api_notifications, name='api_notifications'),
+    path('api/notifications/<int:pk>/read/', views.api_mark_notification_read, name='api_mark_notification_read'),
 ]

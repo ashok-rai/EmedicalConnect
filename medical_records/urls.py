@@ -4,22 +4,24 @@ from . import views
 app_name = 'medical_records'
 
 urlpatterns = [
-    # View records
+    # Medical Records
     path('', views.record_list, name='record_list'),
     path('<int:pk>/', views.record_detail, name='record_detail'),
     
-    # Create, update records
+    # Add/Edit Records
     path('add/', views.add_record, name='add_record'),
     path('<int:pk>/edit/', views.edit_record, name='edit_record'),
     
     # Prescriptions
     path('prescriptions/', views.prescription_list, name='prescription_list'),
     path('prescriptions/<int:pk>/', views.prescription_detail, name='prescription_detail'),
-    path('prescriptions/add/', views.add_prescription, name='add_prescription'),
+    path('record/<int:record_id>/add-prescription/', views.add_prescription, name='add_prescription'),
+    path('prescriptions/<int:prescription_id>/edit/', views.edit_prescription, name='edit_prescription'),
     
-    # Doctors can see their patients' records
-    path('patient/<int:patient_id>/records/', views.patient_records, name='patient_records'),
+    # Doctor-Patient Records
+    path('patients/', views.patient_records, name='patient_records'),
+    path('patients/<int:patient_id>/', views.patient_records, name='patient_records_detail'),
     
-    # Download files
+    # File Download
     path('<int:pk>/download/', views.download_record_file, name='download_record_file'),
 ]

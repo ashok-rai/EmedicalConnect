@@ -1,0 +1,50 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}Cancel Appointment - MedBooking{% endblock %}
+
+{% block dashboard_content %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-times-circle me-2 text-danger"></i> Cancel Appointment
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i> Warning</h5>
+            <p>Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+        </div>
+        
+        <div class="card bg-light mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Appointment Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                        <p><strong>Specialization:</strong> {{ appointment.doctor.specialization }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date:</strong> {{ appointment.appointment_date|date:"l, F j, Y" }}</p>
+                        <p><strong>Time:</strong> {{ appointment.appointment_time|time:"g:i A" }}</p>
+                    </div>
+                </div>
+                <p><strong>Reason:</strong> {{ appointment.reason|default:"Not specified" }}</p>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-outline-secondary me-md-2">
+                    <i class="fas fa-arrow-left me-1"></i> Back
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-times me-1"></i> Confirm Cancellation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

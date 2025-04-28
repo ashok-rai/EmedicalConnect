@@ -383,3 +383,33 @@ def admin_patient_list(request):
     }
     
     return render(request, 'accounts/admin_patient_list.html', context)
+
+
+
+from django.http import JsonResponse
+
+def doctor_info_api(request, pk):
+    """API endpoint for doctor details"""
+    doctor = get_object_or_404(DoctorProfile, pk=pk)
+    
+    # Get doctor's rating
+    from appointments.models import Feedback
+    feedback = Feedback.objects.filter(appointment__doctor=doctor)
+    avg_rating = feedback.aggregate(Avg('rating'))['rating__avg'] or 0
+    
+    data = {
+        'id': doctor.id,
+        'first_name': doctor.user.first_name,
+        'last_name': doctor.user.last_name,
+        'specialization': doctor.specialization,
+        'experience_years': doctor.experience_years,
+        'bio': doctor.bio or 'No bio available',
+        'consultation_fee': str(doctor.consultation_fee) if doctor.consultation_fee else 'Not specified',
+        'available_days': doctor.available_days or 'Not specified',
+        'available_time_start': str(doctor.available_time_start) if doctor.available_time_start else 'Not specified',
+        'available_time_end': str(doctor.available_time_end) if doctor.available_time_end else 'Not specified',
+        'avg_rating': round(avg_rating, 1),
+        'feedback_count': feedback.count(),
+    }
+    
+    return JsonResponse(data)

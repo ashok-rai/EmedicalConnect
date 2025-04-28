@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications | MedBooking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">Notifications</h2>
+            <p class="text-muted">Stay updated with your appointments, messages, and more</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <form action="{% url 'messaging:mark_all_notifications_read' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-check-double me-2"></i> Mark All Read
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">All Notifications</h5>
+                </div>
+                <div class="list-group list-group-flush notification-list">
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                            <div class="list-group-item notification-item {% if not notification.is_read %}unread{% endif %}">
+                                <div class="d-flex align-items-center">
+                                    <!-- Notification Icon -->
+                                    <div class="notification-icon me-3">
+                                        {% if notification.notification_type == 'message' %}
+                                            <div class="icon-bubble bg-primary">
+                                                <i class="fas fa-comment-alt text-white"></i>
+                                            </div>
+                                        {% elif notification.notification_type == 'appointment' %}
+                                            <div class="icon-bubble bg-success">
+                                                <i class="fas fa-calendar-check text-white"></i>
+                                            </div>
+                                        {% elif notification.notification_type == 'prescription' %}
+                                            <div class="icon-bubble bg-info">
+                                                <i class="fas fa-prescription text-white"></i>
+                                            </div>
+                                        {% elif notification.notification_type == 'medical_record' %}
+                                            <div class="icon-bubble bg-warning">
+                                                <i class="fas fa-file-medical text-white"></i>
+                                            </div>
+                                        {% else %}
+                                            <div class="icon-bubble bg-secondary">
+                                                <i class="fas fa-bell text-white"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Notification Content -->
+                                    <div class="notification-content flex-grow-1">
+                                        <h6 class="notification-title mb-1">{{ notification.title }}</h6>
+                                        <p class="notification-message mb-1">{{ notification.message }}</p>
+                                        <p class="notification-time mb-0">
+                                            <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Notification Actions -->
+                                    <div class="notification-actions ms-3">
+                                        {% if notification.related_url %}
+                                            <a href="{{ notification.related_url }}" class="btn btn-sm btn-primary">
+                                                View
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                            <h4>No Notifications</h4>
+                            <p class="text-muted">You don't have any notifications at the moment.</p>
+                            <a href="{% url 'accounts:dashboard' %}" class="btn btn-primary mt-2">
+                                Return to Dashboard
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-item {
+        transition: background-color 0.3s;
+    }
+    
+    .notification-item.unread {
+        background-color: rgba(13, 110, 253, 0.05);
+        border-left: 3px solid #0d6efd;
+    }
+    
+    .notification-item:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .icon-bubble {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+    }
+    
+    .notification-message {
+        color: #555;
+    }
+</style>
+{% endblock %}

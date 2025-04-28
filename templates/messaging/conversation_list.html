@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages | MedBooking{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-0">Messages</h2>
+            <p class="text-muted">View and manage your conversations</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'messaging:new_conversation' %}" class="btn btn-primary">
+                <i class="fas fa-comment-medical me-2"></i> New Conversation
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Conversations List -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Conversations</h5>
+                </div>
+                <div class="list-group list-group-flush conversation-list">
+                    {% if conversations %}
+                        {% for item in conversations %}
+                            <a href="{% url 'messaging:conversation_detail' item.conversation.id %}" class="list-group-item list-group-item-action {% if request.resolver_match.kwargs.pk|slugify == item.conversation.id|slugify %}active{% endif %}">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ item.other_user.get_full_name|default:item.other_user.email }}</h6>
+                                        {% if item.other_user.role == 'doctor' %}
+                                            <small class="text-primary"><i class="fas fa-user-md me-1"></i> Doctor</small>
+                                        {% elif item.other_user.role == 'patient' %}
+                                            <small class="text-success"><i class="fas fa-user me-1"></i> Patient</small>
+                                        {% endif %}
+                                    </div>
+                                    {% if item.unread_count > 0 %}
+                                        <span class="badge rounded-pill bg-primary">{{ item.unread_count }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if item.last_message %}
+                                    <p class="mb-1 text-truncate small {% if item.unread_count > 0 %}fw-bold{% endif %}">
+                                        {% if item.last_message.sender == request.user %}
+                                            <i class="fas fa-reply text-muted me-1"></i>
+                                        {% endif %}
+                                        {{ item.last_message.content }}
+                                    </p>
+                                    <small class="text-muted">{{ item.last_message.timestamp|timesince }} ago</small>
+                                {% else %}
+                                    <p class="mb-1 text-muted small"><i>No messages yet</i></p>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <h5>No Conversations Yet</h5>
+                            <p class="text-muted">Start a new conversation to begin messaging</p>
+                            <a href="{% url 'messaging:new_conversation' %}" class="btn btn-primary">
+                                <i class="fas fa-comment-medical me-2"></i> New Conversation
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversation Preview or Instructions -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm conversation-preview">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                    <h3>Welcome to Messages</h3>
+                    <p class="text-muted">Select a conversation from the list or start a new one</p>
+                    <a href="{% url 'messaging:new_conversation' %}" class="btn btn-primary mt-2">
+                        <i class="fas fa-comment-medical me-2"></i> New Conversation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Highlight active conversation
+    document.addEventListener('DOMContentLoaded', function() {
+        const activeConversation = document.querySelector('.conversation-list .active');
+        if (activeConversation) {
+            activeConversation.scrollIntoView({ block: 'center' });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}Doctor Profile - MedBooking{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-md me-2 text-primary"></i> My Profile
+                </h5>
+                <a href="{% url 'accounts:edit_profile' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-edit me-1"></i> Edit Profile
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4 mb-md-0">
+                        <div class="avatar-circle mx-auto mb-3">
+                            <span class="avatar-text">{{ profile.user.get_initial }}</span>
+                        </div>
+                        <h5 class="mb-1">Dr. {{ profile.user.get_full_name }}</h5>
+                        <p class="text-muted small mb-3">{{ profile.specialization }}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Email Address</p>
+                                <p class="mb-3">{{ profile.user.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Phone Number</p>
+                                <p class="mb-3">{{ profile.phone_number }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">License Number</p>
+                                <p class="mb-3">{{ profile.license_number }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Experience</p>
+                                <p class="mb-3">{{ profile.experience_years }} years</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-1 text-muted small">Office Address</p>
+                                <p class="mb-3">{{ profile.office_address }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-graduate me-2 text-primary"></i> Professional Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <p class="mb-1 text-muted small">Qualification</p>
+                        <p class="mb-3">{{ profile.qualification|default:"Not specified" }}</p>
+                    </div>
+                    <div class="col-12">
+                        <p class="mb-1 text-muted small">Biography</p>
+                        <p class="mb-3">{{ profile.bio|default:"Not specified" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 text-muted small">Consultation Fee</p>
+                        <p class="mb-3">${{ profile.consultation_fee|default:"Not specified" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar-alt me-2 text-primary"></i> Availability
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1 text-muted small">Available Days</p>
+                <p class="mb-3">{{ profile.available_days|default:"Not specified" }}</p>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-1 text-muted small">Start Time</p>
+                        <p class="mb-3">{{ profile.available_time_start|default:"Not specified" }}</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-1 text-muted small">End Time</p>
+                        <p class="mb-3">{{ profile.available_time_end|default:"Not specified" }}</p>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-primary">
+                    {% comment %} <a href="{% url 'accounts:edit_availability' %}" class="btn btn-outline-primary"> {% endcomment %}
+                        <i class="fas fa-clock me-1"></i> Update Availability
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-shield-alt me-2 text-primary"></i> Account Security
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <p class="mb-1 text-muted small">Password</p>
+                    <p class="mb-3">
+                        <span class="me-2">••••••••</span>
+                        <a href="{% url 'account_change_password' %}" class="text-primary small">Change Password</a>
+                    </p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-primary">
+                    {% comment %} <a href="{% url 'accounts:account_settings' %}" class="btn btn-outline-primary"> {% endcomment %}
+                        <i class="fas fa-cogs me-1"></i> Account Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: var(--bs-primary);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .avatar-text {
+        font-size: 40px;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

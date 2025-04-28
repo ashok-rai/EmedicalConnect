@@ -1,0 +1,147 @@
+/* Messaging System Styles */
+
+/* Conversations List */
+.conversation-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.conversation-list .list-group-item {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.conversation-list .list-group-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.conversation-list .list-group-item.active {
+    background-color: #f8f9fa;
+    color: #212529;
+    border-left: 3px solid #0d6efd;
+}
+
+.unread-message {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-left: 3px solid #0d6efd !important;
+}
+
+/* Chat Interface */
+.chat-container {
+    height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+.message-wrapper {
+    display: flex;
+    margin-bottom: 15px;
+    max-width: 85%;
+}
+
+.message-in {
+    align-self: flex-start;
+}
+
+.message-out {
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message-in .message-bubble {
+    background-color: #f0f2f5;
+    border-bottom-left-radius: 5px;
+}
+
+.message-out .message-bubble {
+    background-color: #d1e7ff;
+    border-bottom-right-radius: 5px;
+}
+
+.message-content {
+    margin-bottom: 5px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.message-info {
+    text-align: right;
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+/* Message Form */
+.message-form {
+    display: flex;
+}
+
+.message-form textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 40px;
+    max-height: 120px;
+    line-height: 1.5;
+    border-radius: 24px;
+    padding: 10px 15px;
+}
+
+.message-form button {
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+}
+
+/* Notifications */
+.notification-item {
+    transition: background-color 0.3s;
+    padding: 15px;
+}
+
+.notification-item.unread {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-left: 3px solid #0d6efd;
+}
+
+.notification-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.icon-bubble {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-title {
+    font-weight: 600;
+}
+
+.notification-message {
+    color: #555;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-wrapper {
+        max-width: 90%;
+    }
+    
+    .chat-container {
+        height: 350px;
+    }
+}

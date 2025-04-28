@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile | EMedic{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-shield text-primary me-2"></i> Administrator Profile
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 120px; height: 120px; font-size: 3rem;">
+                                {{ user.first_name|first|default:"A" }}{{ user.last_name|first|default:"D" }}
+                            </div>
+                            
+                            <h5 class="mb-1">{{ user.get_full_name|default:"Administrator" }}</h5>
+                            <p class="text-muted mb-3">
+                                <span class="badge bg-primary rounded-pill">Administrator</span>
+                            </p>
+                            
+                            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit me-2"></i> Edit Profile
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="border-bottom mb-3 pb-3">
+                                <h5 class="mb-3">Personal Information</h5>
+                                
+                                <div class="mb-2 row">
+                                    <div class="col-sm-4 text-muted">Email</div>
+                                    <div class="col-sm-8">{{ user.email }}</div>
+                                </div>
+                                
+                                <div class="mb-2 row">
+                                    <div class="col-sm-4 text-muted">First Name</div>
+                                    <div class="col-sm-8">{{ user.first_name|default:"Not provided" }}</div>
+                                </div>
+                                
+                                <div class="mb-2 row">
+                                    <div class="col-sm-4 text-muted">Last Name</div>
+                                    <div class="col-sm-8">{{ user.last_name|default:"Not provided" }}</div>
+                                </div>
+                                
+                                <div class="mb-2 row">
+                                    <div class="col-sm-4 text-muted">Date Joined</div>
+                                    <div class="col-sm-8">{{ user.date_joined|date:"F d, Y" }}</div>
+                                </div>
+                                
+                                <div class="mb-2 row">
+                                    <div class="col-sm-4 text-muted">Account Status</div>
+                                    <div class="col-sm-8">
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success rounded-pill">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-danger rounded-pill">Inactive</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h5 class="mb-3">Administrator Privileges</h5>
+                                
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-users-cog text-primary me-3"></i>
+                                        <span>Manage all users and profiles</span>
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-calendar-alt text-primary me-3"></i>
+                                        <span>Manage all appointments</span>
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-file-medical-alt text-primary me-3"></i>
+                                        <span>Access to all medical records</span>
+                                    </li>
+                                    <li class="list-group-item d-flex align-items-center">
+                                        <i class="fas fa-chart-line text-primary me-3"></i>
+                                        <span>View system analytics and reports</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

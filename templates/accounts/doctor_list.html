@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Doctors | EMedic{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-md text-primary me-2"></i> Find a Doctor
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-5">
+                            <label for="name" class="form-label">Doctor Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                    placeholder="Search by name" value="{{ current_name }}">
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="specialization" class="form-label">Specialization</label>
+                            <select class="form-select" id="specialization" name="specialization">
+                                <option value="">All Specializations</option>
+                                {% for spec in specializations %}
+                                    <option value="{{ spec }}" {% if current_specialization == spec %}selected{% endif %}>
+                                        {{ spec }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 align-self-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-1"></i> Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if doctors %}
+            {% for doctor in doctors %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 1.5rem;">
+                                        {{ doctor.user.first_name|first }}{{ doctor.user.last_name|first }}
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="card-title mb-1">Dr. {{ doctor.user.get_full_name }}</h5>
+                                    <p class="card-subtitle text-primary mb-0">{{ doctor.specialization }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex mb-2">
+                                    <div class="me-2"><i class="fas fa-medal text-muted"></i></div>
+                                    <div>{{ doctor.experience_years }} years experience</div>
+                                </div>
+                                <div class="d-flex mb-2">
+                                    <div class="me-2"><i class="fas fa-certificate text-muted"></i></div>
+                                    <div>{{ doctor.qualification }}</div>
+                                </div>
+                                <div class="d-flex mb-2">
+                                    <div class="me-2"><i class="fas fa-money-bill-wave text-muted"></i></div>
+                                    <div>Consultation Fee: ${{ doctor.consultation_fee }}</div>
+                                </div>
+                            </div>
+                            
+                            <a href="{% url 'accounts:doctor_detail' doctor.id %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-info-circle me-1"></i> View Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> No doctors found matching your search criteria.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

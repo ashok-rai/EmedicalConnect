@@ -1,0 +1,153 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block title %}Add Feedback - MedBooking{% endblock %}
+
+{% block dashboard_content %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-star me-2 text-warning"></i> Add Feedback
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="card bg-light mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Appointment Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                        <p><strong>Specialization:</strong> {{ appointment.doctor.specialization }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date:</strong> {{ appointment.appointment_date|date:"l, F j, Y" }}</p>
+                        <p><strong>Time:</strong> {{ appointment.appointment_time|time:"g:i A" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label">How would you rate your experience?</label>
+                <div class="rating-stars mb-3">
+                    {% for i in '12345'|make_list %}
+                        <i class="far fa-star fa-2x" data-rating="{{ forloop.counter }}"></i>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="rating" id="id_rating" value="{{ form.rating.value|default:'' }}">
+                <small class="form-text text-muted">Click on a star to rate your experience (1 = Poor, 5 = Excellent)</small>
+                {% if form.rating.errors %}
+                    <div class="text-danger">
+                        {{ form.rating.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <label for="id_comments" class="form-label">Additional Comments (Optional)</label>
+                <textarea id="id_comments" name="comments" class="form-control" rows="4" placeholder="Share your experience with the doctor and your thoughts on the consultation...">{{ form.comments.value|default:'' }}</textarea>
+                <small class="form-text text-muted">Your feedback helps us improve our services and assists other patients in choosing doctors.</small>
+                {% if form.comments.errors %}
+                    <div class="text-danger">
+                        {{ form.comments.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="alert alert-info mb-4" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                Your feedback will be visible to the doctor and may be displayed (anonymously) to other patients. Please provide honest and constructive feedback.
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-outline-secondary me-md-2">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane me-1"></i> Submit Feedback
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rating-stars {
+        cursor: pointer;
+    }
+    
+    .rating-stars i {
+        color: #e4e5e9;
+        margin-right: 10px;
+        cursor: pointer;
+    }
+    
+    .rating-stars i.fas {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ratingStars = document.querySelectorAll('.rating-stars i');
+        const ratingInput = document.getElementById('id_rating');
+        
+        // Set initial rating if present
+        const initialRating = parseInt(ratingInput.value);
+        if (initialRating > 0) {
+            updateStars(initialRating);
+        }
+        
+        // Handle star click
+        ratingStars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                const rating = index + 1;
+                ratingInput.value = rating;
+                updateStars(rating);
+            });
+            
+            star.addEventListener('mouseover', () => {
+                const rating = index + 1;
+                highlightStars(rating);
+            });
+            
+            star.addEventListener('mouseout', () => {
+                const currentRating = parseInt(ratingInput.value) || 0;
+                updateStars(currentRating);
+            });
+        });
+        
+        function updateStars(rating) {
+            ratingStars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                }
+            });
+        }
+        
+        function highlightStars(rating) {
+            ratingStars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
