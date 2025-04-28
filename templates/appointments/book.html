@@ -1,113 +1,204 @@
-{% extends 'base.html' %}
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+{% load bootstrap5 %}
 
 {% block title %}Book Appointment - MedBooking{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <h1 class="mb-4">Book an Appointment</h1>
-    
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Appointment Details</h4>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('appointment.book') }}">
-                        {{ form.hidden_tag() }}
-                        
-                        <div class="mb-3">
-                            {{ form.doctor_id.label(class="form-label") }}
-                            {{ form.doctor_id(class="form-select" + (" is-invalid" if form.doctor_id.errors else "")) }}
-                            {% if form.doctor_id.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.doctor_id.errors %}
-                                        {{ error }}
+{% block dashboard_content %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-calendar-plus me-2 text-primary"></i> Book New Appointment
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="id_doctor" class="form-label">Select Doctor</label>
+                                <select id="id_doctor" name="doctor" class="form-select" required>
+                                    <option value="">-- Select a Doctor --</option>
+                                    {% for doctor in form.fields.doctor.queryset %}
+                                        <option value="{{ doctor.id }}" {% if form.doctor.value == doctor.id %}selected{% endif %}>
+                                            Dr. {{ doctor.user.get_full_name }} - {{ doctor.specialization }}
+                                        </option>
                                     {% endfor %}
-                                </div>
-                            {% endif %}
-                            <div id="doctor-info"></div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form.date.label(class="form-label") }}
-                                {{ form.date(class="form-control" + (" is-invalid" if form.date.errors else ""), type="date") }}
-                                {% if form.date.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.date.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form.time.label(class="form-label") }}
-                                {{ form.time(class="form-control" + (" is-invalid" if form.time.errors else ""), type="time") }}
-                                {% if form.time.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.time.errors %}
-                                            {{ error }}
-                                        {% endfor %}
+                                </select>
+                                {% if form.doctor.errors %}
+                                    <div class="text-danger">
+                                        {{ form.doctor.errors }}
                                     </div>
                                 {% endif %}
                             </div>
                         </div>
-                        
-                        <div class="mb-3">
-                            {{ form.reason.label(class="form-label") }}
-                            {{ form.reason(class="form-control" + (" is-invalid" if form.reason.errors else ""), rows=4, placeholder="Please describe your symptoms or reason for visit") }}
-                            {% if form.reason.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.reason.errors %}
-                                        {{ error }}
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            {{ form.submit(class="btn btn-primary btn-lg") }}
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Booking Instructions</h5>
-                </div>
-                <div class="card-body">
-                    <ol>
-                        <li>Select a doctor from the dropdown list</li>
-                        <li>Choose a preferred date for your appointment</li>
-                        <li>Select a time slot (business hours only)</li>
-                        <li>Describe your symptoms or reason for the visit</li>
-                        <li>Submit your request</li>
-                    </ol>
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i> You will receive email confirmation once your appointment is confirmed.
                     </div>
-                </div>
+                    
+                    <div id="doctor-info" class="mb-4"></div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_appointment_date" class="form-label">Appointment Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    <input type="date" id="id_appointment_date" name="appointment_date" class="form-control" required 
+                                           value="{{ form.appointment_date.value|date:'Y-m-d' }}">
+                                </div>
+                                {% if form.appointment_date.errors %}
+                                    <div class="text-danger">
+                                        {{ form.appointment_date.errors }}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Select a date for your appointment</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_appointment_time" class="form-label">Appointment Time</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    <input type="time" id="id_appointment_time" name="appointment_time" class="form-control" required
+                                           value="{{ form.appointment_time.value|time:'H:i' }}">
+                                </div>
+                                {% if form.appointment_time.errors %}
+                                    <div class="text-danger">
+                                        {{ form.appointment_time.errors }}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Select a time slot for your appointment</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="id_reason" class="form-label">Reason for Visit</label>
+                        <textarea id="id_reason" name="reason" class="form-control" rows="4" placeholder="Please describe your symptoms or reason for consultation">{{ form.reason.value }}</textarea>
+                        {% if form.reason.errors %}
+                            <div class="text-danger">
+                                {{ form.reason.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Book Appointment</button>
+                    </div>
+                </form>
             </div>
             
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">Important Notice</h5>
-                </div>
-                <div class="card-body">
-                    <p>Please note the following:</p>
-                    <ul>
-                        <li>Arrive 15 minutes before your appointment</li>
-                        <li>Bring any relevant medical records</li>
-                        <li>Cancellations should be made at least 24 hours in advance</li>
-                        <li>If you have an emergency, please call 911 or go to your nearest emergency room</li>
-                    </ul>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-info-circle me-2"></i> Booking Information
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i> 
+                                Select your preferred doctor from the dropdown menu
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i> 
+                                Choose a date and time that fits your schedule
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i> 
+                                Provide details about your symptoms or reason for the visit
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i> 
+                                Receive confirmation and appointment details via email
+                            </li>
+                        </ul>
+                        
+                        <hr>
+                        
+                        <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i> Please Note:</h6>
+                        <p class="small text-muted">
+                            You can cancel or reschedule your appointment up to 24 hours before the scheduled time.
+                            For emergency cases, please call our emergency hotline at <strong>(123) 456-7890</strong>.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const doctorSelect = document.getElementById('id_doctor');
+        const doctorInfo = document.getElementById('doctor-info');
+        
+        // Function to load doctor information
+        function loadDoctorInfo() {
+            const doctorId = doctorSelect.value;
+            
+            if (!doctorId) {
+                doctorInfo.innerHTML = '';
+                return;
+            }
+            
+            // Show loading indicator
+            doctorInfo.innerHTML = `
+                <div class="d-flex justify-content-center my-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+            
+            // Simulate loading doctor details (in a real app this would be an AJAX call)
+            setTimeout(() => {
+                const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+                const doctorName = selectedOption.textContent;
+                
+                // Get the specialization from the option text (after the dash)
+                const parts = doctorName.split(' - ');
+                const name = parts[0];
+                const specialization = parts.length > 1 ? parts[1] : '';
+                
+                const doctorDetails = `
+                    <div class="card mb-3 border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">${name}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">${specialization}</h6>
+                            <p class="card-text small">
+                                <i class="fas fa-calendar-day text-primary me-2"></i> Available days may vary. Please select a date to check availability.
+                            </p>
+                            <p class="card-text small">
+                                <i class="fas fa-clock text-primary me-2"></i> Please select an available time slot.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
+                doctorInfo.innerHTML = doctorDetails;
+            }, 500);
+        }
+        
+        // Load doctor info when the page loads (if a doctor is selected)
+        if (doctorSelect.value) {
+            loadDoctorInfo();
+        }
+        
+        // Load doctor info when the selection changes
+        doctorSelect.addEventListener('change', loadDoctorInfo);
+        
+        // Set minimum date to today for the date picker
+        const datePicker = document.getElementById('id_appointment_date');
+        const today = new Date().toISOString().split('T')[0];
+        datePicker.setAttribute('min', today);
+    });
+</script>
 {% endblock %}

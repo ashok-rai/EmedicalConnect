@@ -1,0 +1,361 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+{% load bootstrap5 %}
+
+{% block title %}Appointment Details - MedBooking{% endblock %}
+
+{% block dashboard_content %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-calendar-day me-2 text-primary"></i> Appointment Details
+            </h5>
+            <span class="badge bg-{% if appointment.status == 'scheduled' %}primary{% elif appointment.status == 'completed' %}success{% elif appointment.status == 'cancelled' %}danger{% elif appointment.status == 'no_show' %}warning{% else %}secondary{% endif %} px-3 py-2">
+                {{ appointment.get_status_display }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Appointment Information -->
+                <h5 class="border-bottom pb-2 mb-3">Appointment Information</h5>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Date:</strong></p>
+                        <p class="bg-light p-2 rounded">
+                            <i class="fas fa-calendar-alt text-primary me-2"></i>
+                            {{ appointment.appointment_date|date:"l, F j, Y" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Time:</strong></p>
+                        <p class="bg-light p-2 rounded">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            {{ appointment.appointment_time|time:"g:i A" }}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <p class="mb-1"><strong>Reason for Visit:</strong></p>
+                        <div class="bg-light p-3 rounded">
+                            {% if appointment.reason %}
+                                {{ appointment.reason|linebreaks }}
+                            {% else %}
+                                <span class="text-muted">No reason specified</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Doctor's Notes (visible if completed and notes exist) -->
+                {% if appointment.status == 'completed' and appointment.notes %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <p class="mb-1"><strong>Doctor's Notes:</strong></p>
+                            <div class="bg-light p-3 rounded border-start border-primary border-3">
+                                {{ appointment.notes|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Telemedicine Link (if available) -->
+                {% if appointment.meeting_link and appointment.status == 'scheduled' %}
+                    <div class="alert alert-info" role="alert">
+                        <h6><i class="fas fa-video me-2"></i> Telemedicine Appointment</h6>
+                        <p class="mb-2">This appointment will be conducted via video conference.</p>
+                        <a href="{{ appointment.meeting_link }}" class="btn btn-primary btn-sm" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i> Join Meeting
+                        </a>
+                    </div>
+                {% endif %}
+                
+                <!-- Feedback Section -->
+                {% if appointment.status == 'completed' %}
+                    <h5 class="border-bottom pb-2 mb-3 mt-4">Feedback</h5>
+                    {% if feedback %}
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-2">Your Rating</h6>
+                                        <div class="rating mb-3">
+                                            {% for i in '12345'|make_list %}
+                                                {% if forloop.counter <= feedback.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <span class="ms-2 text-muted">({{ feedback.rating }}/5)</span>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                
+                                {% if feedback.comments %}
+                                    <p class="mb-0">{{ feedback.comments }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% elif show_feedback_form %}
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="mb-3">Leave Your Feedback</h6>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="submit_feedback" value="1">
+                                    
+                                    <div class="mb-3">
+                                        <label>How would you rate your experience?</label>
+                                        <div class="rating-stars mb-2">
+                                            {% for i in '12345'|make_list %}
+                                                <i class="far fa-star fa-2x" data-rating="{{ forloop.counter }}"></i>
+                                            {% endfor %}
+                                        </div>
+                                        <input type="hidden" name="rating" id="id_rating" value="">
+                                        {% if feedback_form.rating.errors %}
+                                            <div class="text-danger">
+                                                {{ feedback_form.rating.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="id_comments" class="form-label">Additional Comments (Optional)</label>
+                                        <textarea id="id_comments" name="comments" class="form-control" rows="3" placeholder="Share your experience with the doctor...">{{ feedback_form.comments.value|default:'' }}</textarea>
+                                        {% if feedback_form.comments.errors %}
+                                            <div class="text-danger">
+                                                {{ feedback_form.comments.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No feedback has been provided for this appointment.</p>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% if request.user.is_patient %}{% url 'appointments:my_appointments' %}{% elif request.user.is_doctor %}{% url 'appointments:doctor_appointments' %}{% else %}{% url 'appointments:admin_all_appointments' %}{% endif %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Appointments
+                    </a>
+                    
+                    <div>
+                        {% if appointment.status == 'scheduled' %}
+                            {% if request.user.is_patient or request.user.is_doctor %}
+                                <a href="{% url 'appointments:reschedule_appointment' appointment.id %}" class="btn btn-warning me-2">
+                                    <i class="fas fa-sync-alt me-1"></i> Reschedule
+                                </a>
+                                <a href="{% url 'appointments:cancel_appointment' appointment.id %}" class="btn btn-danger">
+                                    <i class="fas fa-times me-1"></i> Cancel
+                                </a>
+                            {% endif %}
+                            
+                            {% if request.user.is_doctor %}
+                                <a href="{% url 'appointments:complete_appointment' appointment.id %}" class="btn btn-success me-2">
+                                    <i class="fas fa-check me-1"></i> Mark as Completed
+                                </a>
+                                
+                                <a href="{% url 'appointments:add_appointment_notes' appointment.id %}" class="btn btn-primary">
+                                    <i class="fas fa-notes-medical me-1"></i> Add Notes
+                                </a>
+                            {% endif %}
+                        {% elif request.user.is_doctor and appointment.status == 'completed' and not appointment.notes %}
+                            <a href="{% url 'appointments:add_appointment_notes' appointment.id %}" class="btn btn-primary">
+                                <i class="fas fa-notes-medical me-1"></i> Add Notes
+                            </a>
+                        {% endif %}
+                        
+                        {% if appointment.status == 'completed' and request.user.is_patient %}
+                            <a href="{% url 'appointments:book_appointment' %}?doctor={{ appointment.doctor.id }}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-1"></i> Book New Appointment
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <!-- Doctor/Patient Information Card -->
+                {% if request.user.is_patient %}
+                    <!-- Show Doctor Info -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-user-md me-2"></i> Doctor Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Dr. {{ appointment.doctor.user.get_full_name }}</h5>
+                            <h6 class="card-subtitle mb-3 text-muted">{{ appointment.doctor.specialization }}</h6>
+                            
+                            <p class="mb-2">
+                                <i class="fas fa-graduation-cap me-2 text-primary"></i>
+                                {{ appointment.doctor.qualification|default:"Not specified" }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-briefcase me-2 text-primary"></i>
+                                {{ appointment.doctor.experience_years }} years experience
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-phone me-2 text-primary"></i>
+                                {{ appointment.doctor.phone_number|default:"Not available" }}
+                            </p>
+                            
+                            {% if appointment.doctor.office_address %}
+                                <p class="mb-3">
+                                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                    {{ appointment.doctor.office_address }}
+                                </p>
+                            {% endif %}
+                            
+                            {% if appointment.status == 'scheduled' %}
+                                <a href="{% url 'messaging:start_conversation' appointment.doctor.user.id %}" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-comment-medical me-1"></i> Message Doctor
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% elif request.user.is_doctor or request.user.is_admin %}
+                    <!-- Show Patient Info -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-user me-2"></i> Patient Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ appointment.patient.user.get_full_name }}</h5>
+                            <h6 class="card-subtitle mb-3 text-muted">Patient</h6>
+                            
+                            {% if appointment.patient.date_of_birth %}
+                                <p class="mb-2">
+                                    <i class="fas fa-birthday-cake me-2 text-primary"></i>
+                                    {{ appointment.patient.date_of_birth|date:"M d, Y" }}
+                                </p>
+                            {% endif %}
+                            
+                            {% if appointment.patient.gender %}
+                                <p class="mb-2">
+                                    <i class="fas fa-venus-mars me-2 text-primary"></i>
+                                    {{ appointment.patient.get_gender_display }}
+                                </p>
+                            {% endif %}
+                            
+                            <p class="mb-2">
+                                <i class="fas fa-envelope me-2 text-primary"></i>
+                                {{ appointment.patient.user.email }}
+                            </p>
+                            
+                            <p class="mb-2">
+                                <i class="fas fa-phone me-2 text-primary"></i>
+                                {{ appointment.patient.phone_number|default:"Not available" }}
+                            </p>
+                            
+                            {% if request.user.is_doctor and appointment.status == 'scheduled' %}
+                                <div class="mt-3">
+                                    <a href="{% url 'messaging:start_conversation' appointment.patient.user.id %}" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-comment-medical me-1"></i> Message Patient
+                                    </a>
+                                </div>
+                                
+                                {% if request.user.is_doctor %}
+                                    <div class="mt-2">
+                                        <a href="{% url 'medical_records:patient_records' appointment.patient.id %}" class="btn btn-outline-secondary w-100">
+                                            <i class="fas fa-file-medical me-1"></i> View Records
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rating {
+        color: #ffc107;
+    }
+    
+    .rating-stars i {
+        cursor: pointer;
+        color: #e4e5e9;
+        margin-right: 5px;
+    }
+    
+    .rating-stars i.fas {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Star rating functionality
+        const ratingStars = document.querySelectorAll('.rating-stars i');
+        const ratingInput = document.getElementById('id_rating');
+        
+        if (ratingStars.length > 0 && ratingInput) {
+            // Handle star click
+            ratingStars.forEach((star, index) => {
+                star.addEventListener('click', () => {
+                    const rating = index + 1;
+                    ratingInput.value = rating;
+                    updateStars(rating);
+                });
+                
+                star.addEventListener('mouseover', () => {
+                    const rating = index + 1;
+                    highlightStars(rating);
+                });
+                
+                star.addEventListener('mouseout', () => {
+                    const currentRating = ratingInput.value || 0;
+                    updateStars(currentRating);
+                });
+            });
+            
+            function updateStars(rating) {
+                ratingStars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('far');
+                        star.classList.add('fas');
+                    } else {
+                        star.classList.remove('fas');
+                        star.classList.add('far');
+                    }
+                });
+            }
+            
+            function highlightStars(rating) {
+                ratingStars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.remove('far');
+                        star.classList.add('fas');
+                    } else {
+                        star.classList.remove('fas');
+                        star.classList.add('far');
+                    }
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}
