@@ -1,7 +1,7 @@
 [project]
-name = "repl-nix-workspace"
+name = "EmedicalConnect"
 version = "0.1.0"
-description = "Add your description here"
+description = "EmedicalConnect is a web-based platform for managing digital health records, doctor appointments, prescriptions, and secure messaging between patients and healthcare providers."
 requires-python = ">=3.11"
 dependencies = [
     "django-allauth>=65.7.0",
